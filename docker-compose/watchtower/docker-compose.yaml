@@ -1,0 +1,12 @@
+version: '3.1'
+services:
+  watchtower:
+    image: containrrr/watchtower:amd64-latest
+    container_name: watchtower
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    #command: nginx redis --cleanup --schedule "0 0 4 * * *"  # schedule定时任务
+    command: -i 10 -c $(cat watchtower.list)                  # -i 检测检测时间（秒），-c --cleanup 自动清除旧镜像，只更新watchtower.list文件中的容器

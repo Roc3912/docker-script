@@ -1,0 +1,55 @@
+version: '3'
+networks:
+  elk:
+
+volumes:
+  elasticsearch:
+
+services:
+  elasticsearch:
+    image: elasticsearch:7.17.6
+    container_name: elk_elasticsearch
+    restart: unless-stopped
+    volumes:
+      - "elasticsearch:/usr/share/elasticsearch/data"
+      - "./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml"
+    environment:
+      TZ: Asia/Shanghai
+      LANG: en_US.UTF-8
+      discovery.type: single-node
+      ES_JAVA_OPTS: "-Xmx512m -Xms512m"
+      ELASTIC_PASSWORD: "123456" # elastic账号密码
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - elk
+  kibana:
+    image: kibana:7.17.6
+    container_name: elk_kibana
+    restart: unless-stopped
+    volumes:
+      - "./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml"
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    links:
+      - elasticsearch
+    networks:
+      - elk
+  logstash:
+    image: logstash:7.17.6
+    container_name: elk_logstash
+    restart: unless-stopped
+    environment:
+      LS_JAVA_OPTS: "-Xmx512m -Xms512m"
+    volumes:
+      - "./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml"
+      - "./logstash/pipeline:/usr/share/logstash/pipeline"
+    ports:
+      - "5044:5044"
+    depends_on:
+      - elasticsearch
+    networks:
+      - elk

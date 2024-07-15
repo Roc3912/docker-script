@@ -1,0 +1,10 @@
+version: '3.1'
+services:
+  registry-srv:
+    image: registry:2
+    container_name: registry-srv
+    restart: unless-stopped
+    volumes:
+      - ./registry:/var/lib/registry/docker/registry
+    ports:
+      - 5000:5000

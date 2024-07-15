@@ -1,0 +1,20 @@
+groups:
+- name: ssh监控
+  rules:
+  - alert: ssh登录成功告警
+    expr: |
+     sum by (alert_time,from_host,dst_ssh_user_name,dst_ssh_ip,host)
+      (rate(
+      {filename="/var/log/auth.log"}
+      |~ "Accepted "
+      | regexp "(?P<alert_time>\\w{3}\\s+\\d+\\s+\\d{2}:\\d{2}:\\d{2})\\s+(?P<from_host>\\S+).*(?P<ssh_for>for.*)\\s+(?P<dst_ssh_user_name>\\w+)\\s(?P<ssh_from>from)\\s+(?P<dst_ssh_ip>\\d{1,9}.\\d{0,9}.\\d{0,9}.\\d{0,9}) "[1m]))
+      > 0
+    for: 0
+    labels:
+      severity: waring
+      instance: "{{ $labels.host }}"
+    annotations:
+      summary: "时间：{{ $labels.alert_time }}
+                目标IP: {{ $labels.dst_ssh_ip }}
+                用户：{{ $labels.dst_ssh_user_name }}"
+      description: "被登录服务器：{{ $labels.from_host }}"

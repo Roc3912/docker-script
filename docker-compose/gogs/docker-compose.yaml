@@ -1,0 +1,14 @@
+version: '3.1'
+services:
+  gogs:
+    image: gogs/gogs
+    container_name: gogs
+    restart: unless-stopped
+    environment:                        # 设置环境变量,相当于docker run命令中的-e
+      TZ: Asia/Shanghai
+      LANG: en_US.UTF-8
+    volumes:
+      - ./data:/data #数据文件挂载
+    ports:
+      - "1022:22"
+      - "3000:3000"

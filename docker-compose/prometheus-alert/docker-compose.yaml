@@ -1,0 +1,22 @@
+version: '3.1'
+volumes:
+  prometheus_alert_data: {}
+services:
+  nginx:
+    image: feiyu563/prometheus-alert:latest                # 镜像版本
+    container_name: prometheus-alert                       # 容器名,相当于docker run命令中的--name
+    restart: unless-stopped             # 之前是什么状态，docker重启后，保持之前的状态（如果之前是stop，那docker重启时，也是stop状态）
+    volumes:                            # 数据卷挂载路径设置,将本机目录映射到容器目录,相当于docker run命令中的-v
+      - prometheus_alert_data:/app
+    environment:                        # 设置环境变量,相当于docker run命令中的-e
+      PA_LOGIN_USER: admin              # web登录用户名
+      PA_LOGIN_PASSWORD: password       # web登录密码
+      PA_TITLE: PrometheusAlert
+      PA_OPEN_DINGDING: 1               # 是否开启钉钉，1开启，0关闭
+      PA_DDURL: https://oapi.dingtalk.com/robot/send?access_token=xxxxxxx      #xxxx替换自己的token
+      PA_OPEN_WEIXIN: 1                 # 是否开启微信，1开启，0关闭
+      PA_WXURL: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxxxx   #xxxx替换自己的token
+      PA_OPEN_FEISHU: 1                 # 是否开启飞书，1开启，0关闭
+      PA_FSURL: https://open.feishu.cn/open-apis/bot/v2/hook/xxxxxxxxx         #xxxx替换自己的token.最新版本webhook地址已经替换为v2
+    ports:                              # 映射端口，相当于docker run 命令中的-p
+      - "8080:8080"

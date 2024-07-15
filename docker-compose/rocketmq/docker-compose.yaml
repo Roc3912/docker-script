@@ -1,0 +1,50 @@
+version: '3.5'
+services:
+  rocketmq-server:
+    image: apache/rocketmq:4.9.4
+    container_name: rocketmq-server
+    ports:
+      - "9876:9876"
+    environment:
+      JAVA_OPT: -server -Xms512m -Xmx512m
+    command: sh mqnamesrv
+    volumes:
+      - ./server/logs:/home/rocketmq/logs/rocketmqlogs
+      #- ./server/store:/home/rocketmq/store
+    networks:
+      - rocketmq
+  rocketmq-broker:
+    image: apache/rocketmq:4.9.4
+    container_name: rocketmq-broker
+    ports:
+      - "10911:10911"
+      - "10909:10909"
+      - "10912:10912"
+    environment:
+      JAVA_OPT_EXT: -server -Xms512M -Xmx512M -Xmn256m
+      NAMESRV_ADDR: rocketmq-server:9876
+    command: sh mqbroker -c /home/rocketmq/rocketmq-4.9.4/conf/broker.conf
+    depends_on:
+      - rocketmq-server
+    volumes:
+      - ./broker/conf/broker.conf:/home/rocketmq/rocketmq-4.9.4/conf/broker.conf
+      - ./broker/logs:/home/rocketmq/logs/rocketmqlogs
+      - ./broker/store:/home/rocketmq/store
+    networks:
+      - rocketmq
+  rocketmq-console:
+    image: styletang/rocketmq-console-ng
+    container_name: rocketmq-console
+    ports:
+      - "19876:19876"
+    environment:
+      JAVA_OPTS: -Dserver.port=19876 -Drocketmq.namesrv.addr=rocketmq-server:9876 -Duser.timezone='Asia/Shanghai' -Dcom.rocketmq.sendMessageWithVIPChannel=false
+    volumes:
+      - /etc/localtime:/etc/localtime
+    depends_on:
+      - rocketmq-server
+    networks:
+      - rocketmq
+networks:
+  rocketmq:
+    driver: bridge

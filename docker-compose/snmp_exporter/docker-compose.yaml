@@ -1,0 +1,10 @@
+version: '3.1'
+services:
+  snmp-exporter:
+    image: prom/snmp-exporter:v0.20.0
+    container_name: snmp-exporter
+    restart: unless-stopped
+    volumes:
+      - ./conf/snmp.yml:/etc/snmp_exporter/snmp.yml #数据文件挂载
+    ports:
+      - 9116:9116

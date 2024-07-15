@@ -1,0 +1,60 @@
+version: "3"
+
+volumes:
+  grafana_data: {}
+
+networks:
+  loki:
+    driver: bridge
+
+services:
+  loki:
+    image: grafana/loki:2.8.1
+    container_name: loki
+    restart: always
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./loki/local-config.yaml:/etc/loki/local-config.yaml
+      - ./loki/rules:/loki/rules
+    networks:
+      - loki
+
+  promtail:
+    image: grafana/promtail:2.8.1
+    container_name: promtail
+    restart: always
+    volumes:
+     - /var/log/cisco:/var/log
+     - /var/log/:/var/log
+     - ./promtail:/etc/promtail
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - loki
+  grafana:
+    image: grafana/grafana:9.5.2
+    container_name: grafana
+    restart: always
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+    env_file:
+      - ./grafana/config.monitoring
+    ports:
+      - "3000:3000"
+    networks:
+      - loki
+  alertmanager:
+    image: prom/alertmanager:v0.25.0
+    container_name: alertmanager
+    restart: always
+    volumes:
+      - ./alertmanager/:/etc/alertmanager/
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+    networks:
+      - loki
+    ports:
+      - "9093:9093"
